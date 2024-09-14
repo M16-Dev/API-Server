@@ -1,0 +1,11 @@
+{
+    "ratelimit": {
+        "amount": 50,
+        "ms": 5000
+    },
+    "pointsPackages": {
+        "basic": {
+            "price": 13.16
+        }
+    }
+}
