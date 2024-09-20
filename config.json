@@ -7,5 +7,10 @@
         "basic": {
             "price": 13.16
         }
+    },
+    "bundles": {
+        "vip": {
+            "price": 1200
+        }
     }
 }

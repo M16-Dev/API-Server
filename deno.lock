@@ -3,6 +3,7 @@
   "packages": {
     "specifiers": {
       "jsr:@std/dotenv": "jsr:@std/dotenv@0.225.2",
+      "npm:express": "npm:express@4.21.0",
       "npm:express-session@1.18.0": "npm:express-session@1.18.0",
       "npm:express@4.21.0": "npm:express@4.21.0",
       "npm:helmet@7.1.0": "npm:helmet@7.1.0",
