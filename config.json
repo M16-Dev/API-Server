@@ -1,5 +1,4 @@
 {
-    "webhook": "https://discord.com/api/webhooks/1287224302596522015/uBQjYve31R78eMLUy7kXstuChmgCZ6PuPytC9uxjg1I4XrxtGZd4EsUIfRBXWwQAc-mq",
     "ratelimit": {
         "amount": 50,
         "ms": 5000

@@ -105,7 +105,7 @@ steamAuthRestricted.post("/points-purchase/tebex", async (req: Request, res: Res
     const product = req.body?.subject?.products[0]
     const steamUser = req.body?.subject?.customer?.username
     if (!product) {
-        await fetch(config.webhook, {
+        await fetch(Deno.env.get('WEBHOOK') as string, {
             method: "POST",
             body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, that is not existing in config. The purchase has not been handled, but funds have been taken. Please resolve this issue manually.` }),
         })
@@ -114,7 +114,7 @@ steamAuthRestricted.post("/points-purchase/tebex", async (req: Request, res: Res
 
     const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
     if (!dbResponse) {
-        await fetch(config.webhook, {
+        await fetch(Deno.env.get('WEBHOOK') as string, {
             method: "POST",
             body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, but db query failed to give purchased points. The points have not been given, but funds have been taken. Please resolve this issue manually.` }),
         })

@@ -2,20 +2,12 @@ import { Client } from "https://deno.land/x/mysql/mod.ts"
 import { SteamID } from 'https://deno.land/x/steamid@v1.2.0/mod.ts';
 
 const api_v4 = await new Client().connect({
-    hostname: "mws02.mikr.us",
-    port: 50183,
-    username: "api_v4",
-    db: "api_v4",
-    password: "dHJ!$!@SKdhASUILDHas7iod127od5#@a7hdlad12"
+    hostname: Deno.env.get('DB_HOSTNAME'),
+    port: Number(Deno.env.get('DB_PORT')),
+    username: Deno.env.get('DB_USERNAME'),
+    db: Deno.env.get('DB_DB'),
+    password: Deno.env.get('DB_PASSWORD')
 })
-
-// const api_v3 = await new Client().connect({
-//     hostname: "mws02.mikr.us",
-//     port: 50183,
-//     username: "api_v4",
-//     db: "api_v3",
-//     password: "dHJ!$!@SKdhASUILDHas7iod127od5#@a7hdlad12"
-// })
 
 
 export async function getPoints(steamID: string): Promise<number> {
