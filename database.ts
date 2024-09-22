@@ -24,14 +24,33 @@ export async function getPoints(steamID: string): Promise<number> {
     return rows?.[0]?.points ?? 0
 }
 
-
 export async function addPoints(steamID: string, points: number): Promise<boolean> {
     const res = await api_v4.execute(`
-        UPDATE points
-        SET points = points + ?
-        WHERE steam_id = ?;`, [points, steamID])
+        INSERT INTO points (steam_id, points)
+        VALUES (?, ?)
+        ON DUPLICATE KEY UPDATE
+        points = points + ?`, 
+        [steamID, points, points])
 
-    return !!res
+    const success = !!res?.affectedRows
+
+    if (success)
+        api_v4.execute(`
+            INSERT INTO points_logs (steam_id, points_added) VALUES (?, ?)`, [steamID, points])
+    
+    return success
+}
+
+export async function bundlePurchase(steamID: string, bundleCode: string): Promise<boolean> {
+    const res = await api_v4.execute(`INSERT INTO bundles_purchased (steam_id, bundle) VALUES (?, ?)`, [steamID, bundleCode])
+    
+    return !!res?.affectedRows
+}
+
+export async function connectAccounts(steamID: string, discordID: string): Promise<boolean> {
+    const res = await api_v4.execute(`INSERT INTO steam_discord_ids (steam_id, discord_id) VALUES (?, ?)`, [steamID, discordID])
+    
+    return !!res?.affectedRows
 }
 
 // export async function getSteamIDFromToken(token: string): Promise<string> {
