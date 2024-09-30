@@ -89,13 +89,30 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
     return res.status(200).send(`Purchase successful.`)
 })
 
-steamAuthRestricted.post("/points-purchase/tebex", async (req: Request, res: Response) => {
-    // check if request is from Tebex
-    
+// do wyjebania/przerobienia
+steamAuthRestricted.post("/points-purchase/cashbil", async (req: Request, res: Response) => {
+
+    return res.status(501).send("Cashbil is not supported yet Use Tebex instead.")
+})
+
+
+// tebex
+const tebexRestricted = express.Router()
+tebexRestricted.use((req: Request, res: Response, next: NextFunction) => {
+    // console.log(req.session)
     if (!(tebex.checkIP(req.ip) && tebex.checkSignature(req)))
         return res.status(401).json(`You're not from tebex! Who let's you in there? WHO DO YOU WORK FOR!`)
+    next()
+})
+
+tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => {
+    // check if request is from Tebex
+
+    // if (!(tebex.checkIP(req.ip) && tebex.checkSignature(req)))
+        // return res.status(401).json(`You're not from tebex! Who let's you in there? WHO DO YOU WORK FOR!`)
 
     // validation if requested by Tebex
+
     if (req.body?.type === "validation.webhook")
         return res.status(200).json({ id: req.body?.id })
 
@@ -104,8 +121,9 @@ steamAuthRestricted.post("/points-purchase/tebex", async (req: Request, res: Res
 
     const product = req.body?.subject?.products[0]
     const steamUser = req.body?.subject?.customer?.username
+
     if (!product) {
-        await fetch(Deno.env.get('WEBHOOK') as string, {
+        await fetch(config.webhook, {
             method: "POST",
             body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, that is not existing in config. The purchase has not been handled, but funds have been taken. Please resolve this issue manually.` }),
         })
@@ -114,19 +132,17 @@ steamAuthRestricted.post("/points-purchase/tebex", async (req: Request, res: Res
 
     const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
     if (!dbResponse) {
-        await fetch(Deno.env.get('WEBHOOK') as string, {
+        await fetch(config.webhook, {
             method: "POST",
             body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, but db query failed to give purchased points. The points have not been given, but funds have been taken. Please resolve this issue manually.` }),
         })
         return res.status(400)
     }
 
+    const id = req.body?.id // upsi ktos zapomnial dodac ;*
+    res.json({ id: id })
+
     return res.status(200)
-})
-
-steamAuthRestricted.post("/points-purchase/cashbil", async (req: Request, res: Response) => {
-
-    return res.status(501).send("Cashbil is not supported yet Use Tebex instead.")
 })
 
 
@@ -159,4 +175,5 @@ export default (app: Application) => {
     app.use('/public', notRestricted)
     app.use('/user', steamAuthRestricted)
     app.use('/secure', tokenRestricted)
+    app.use('/tebex', tebexRestricted)
 }
