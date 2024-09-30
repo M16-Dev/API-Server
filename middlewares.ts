@@ -24,6 +24,8 @@ export default (app: express.Application) => {
     })
 
     // Configure session middleware
+    app.set('trust proxy', 1)
+
     app.use(session({
         secret: Deno.env.get('SESSION_SECRET'),
         resave: false,

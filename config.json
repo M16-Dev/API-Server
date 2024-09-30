@@ -4,8 +4,74 @@
         "ms": 5000
     },
     "bundles": {
-        "vip": {
+        "vip14": {
+            "price": 360
+        },
+        "vip30": {
+            "price": 480
+        },
+        "vipPerm": {
+            "price": 1800
+        },
+        "supervip14": {
+            "price": 700
+        },
+        "supervip30": {
+            "price": 960
+        },
+        "supervipPerm": {
+            "price": 3600
+        },
+        "sponsor14": {
+            "price": 960
+        },
+        "sponsor30": {
             "price": 1200
+        },
+        "sponsorPerm": {
+            "price": 4800
+        },
+        "patron14": {
+            "price": 1680
+        },
+        "patron30": {
+            "price": 1920
+        },
+        "patronPerm": {
+            "price": 7200
+        },
+        "cash1": {
+            "price": 120
+        },
+        "cash2": {
+            "price": 240
+        },
+        "cash3": {
+            "price": 450
+        },
+        "cash4": {
+            "price": 960
+        },
+        "cash5": {
+            "price": 1860
+        },
+        "cash6": {
+            "price": 3840
+        },
+        "queue14": {
+            "price": 700
+        },
+        "queuePerm": {
+            "price": 960
+        },
+        "unban1Mies": {
+            "price": 1200
+        },
+        "unbanPerm": {
+            "price": 2620
+        },
+        "unbanCheats": {
+            "price": 3820
         }
     }
 }

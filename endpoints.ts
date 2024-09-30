@@ -36,7 +36,8 @@ notRestricted.get('/auth/steam/return', async (req: Request, res: Response) => {
     })
 
     req.session.steamUser = steamUser
-    return res.redirect('https://fable.zone/')
+    // console.log(req.sessionID)
+    return res.redirect('https://sklep.fable.zone/')
 })
 
 
@@ -52,7 +53,7 @@ steamAuthRestricted.use((req: Request, res: Response, next: NextFunction) => {
 
 steamAuthRestricted.get('/logout', async (req: Request, res: Response) => {
     await req.session.destroy()
-    return res.redirect('https://fable.zone/')
+    return res.redirect('https://sklep.fable.zone/')
 })
 
 steamAuthRestricted.get("/player", async (req: Request, res: Response) => {
@@ -76,17 +77,19 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
 
     const bundlePrice: number = config.bundles[requestedBundle as keyof typeof config.bundles].price
     if (points < bundlePrice)
-        return res.status(400).send(`Insufficient funds for this purchase. Missing ${bundlePrice - points} points.`)
+        // return res.status(400).send(`Insufficient funds for this purchase. Missing ${bundlePrice - points} points.`)
+        return res.status(400).send(`Niewystarczające środki na zakup. Brakuje ${bundlePrice - points} punktów.`)
 
     const payQueryRes: boolean = await db.addPoints(steamID, -bundlePrice)
     if (!payQueryRes)
-        return res.status(500).send("Failed to purchase bundle. Your funds have not changed.")
+        // return res.status(500).send("Failed to purchase bundle. Your funds have not changed.")
+        return res.status(500).send("Nie udało się zakupić paczki. Twoje środki nie zostały zabrane.")
 
     const bundleQueryRes: boolean = await db.bundlePurchase(steamID, requestedBundle)
     if (!bundleQueryRes)
-        return res.status(500).send("Failed to purchase bundle. Your funds could have changed. If you encountered this response, please contact an administrator.")
-
-    return res.status(200).send(`Purchase successful.`)
+        // return res.status(500).send("Failed to purchase bundle. Your funds could have changed. If you encountered this response, please contact an administrator.")
+        return res.status(500).send("Nie udało się zakupić paczki. Twoje środki mogły zostać zabrane. Jeśli napotkałeś ten błąd, skontaktuj się z administratorem.")
+    return res.status(200).send(`Zakupiono pakiet! Wszystkie rzeczy zostaną za chwilę dodane do Twojego konta.`)
 })
 
 // do wyjebania/przerobienia
