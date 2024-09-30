@@ -33,8 +33,8 @@ export async function addPoints(steamID: string, points: number): Promise<boolea
     return success
 }
 
-export async function bundlePurchase(steamID: string, bundleCode: string): Promise<boolean> {
-    const res = await api_v4.execute(`INSERT INTO bundles_purchased (steam_id, bundle) VALUES (?, ?)`, [steamID, bundleCode])
+export async function bundlePurchase(steamID: string, bundleCode: string, price: number): Promise<boolean> {
+    const res = await api_v4.execute(`INSERT INTO bundles_purchased (steam_id, bundle, price) VALUES (?, ?, ?)`, [steamID, bundleCode, price])
     
     return !!res?.affectedRows
 }
