@@ -85,7 +85,7 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
         // return res.status(500).send("Failed to purchase bundle. Your funds have not changed.")
         return res.status(500).send("Nie udało się zakupić paczki. Twoje środki nie zostały zabrane.")
 
-    const bundleQueryRes: boolean = await db.bundlePurchase(steamID, requestedBundle)
+    const bundleQueryRes: boolean = await db.bundlePurchase(steamID, requestedBundle, bundlePrice)
     if (!bundleQueryRes)
         // return res.status(500).send("Failed to purchase bundle. Your funds could have changed. If you encountered this response, please contact an administrator.")
         return res.status(500).send("Nie udało się zakupić paczki. Twoje środki mogły zostać zabrane. Jeśli napotkałeś ten błąd, skontaktuj się z administratorem.")
