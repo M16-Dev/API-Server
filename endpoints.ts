@@ -1,17 +1,9 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
-import SteamAuth from 'steam-openid'
 import * as db from './database.ts'
 import * as tebex from './tebex.ts'
 import config from './config.json' with { type: "json" }
-
-
-// Initialize Steam OpenID
-const steam = new SteamAuth({
-    realm: Deno.env.get('DOMAIN'),
-    returnUrl: Deno.env.get('DOMAIN') + '/public/auth/steam/return',
-    apiKey: Deno.env.get('STEAM_API_KEY')
-})
-
+import passport from "passport"
+import SteamStrategy from "passport-steam"
 
 
 // ? Routes that are open
@@ -22,46 +14,47 @@ notRestricted.get("/uwu", async (req: Request, res: Response) => {
     return res.status(200).send("uwu!")
 })
 
-notRestricted.get('/auth/steam', async (req: Request, res: Response) => {
-    const url: string = await steam.getRedirectUrl().catch((err: string) => {
-        return res.status(500).send(`Unable to get Steam authentication URL: ${err}`)
-    })
 
-    return res.status(302).redirect(url)
-})
+// ? Routes for auth
 
-notRestricted.get('/auth/steam/return', async (req: Request, res: Response) => {
-    const steamUser = await steam.authenticate(req).catch((err: string) => {
-        return res.status(500).send(`Authentication failed: ${err}`)
-    })
+const auth = express.Router()
 
-    req.session.steamUser = steamUser
-    // console.log(req.sessionID)
-    return res.redirect('https://sklep.fable.zone/')
-})
+passport.serializeUser((user: any, done: any) => { done(null, user) })
+passport.deserializeUser((user: any, done: any) => { done(null, user) })
+passport.use(new SteamStrategy({
+    returnURL: Deno.env.get('DOMAIN') + '/auth/steam/return',
+    realm: Deno.env.get('DOMAIN'),
+    apiKey: Deno.env.get('STEAM_API_KEY'),
+  },
+  (identifier: any, profile: any, done: any) => {
+    profile.identifier = identifier
+    return done(null, profile)
+  }
+))
 
+auth.get('/steam', passport.authenticate('steam'))
+
+auth.get('/steam/return',
+    passport.authenticate('steam', { failureRedirect: 'https://sklep.fable.zone/' }),
+    (req: Request, res: Response) => { res.redirect('https://sklep.fable.zone/') }
+)
 
 
 // ? Routes that require steam authentication
 
 const steamAuthRestricted = express.Router()
 steamAuthRestricted.use((req: Request, res: Response, next: NextFunction) => {
-    if (!req.session.steamUser)
+    if (!req.isAuthenticated())
         return res.status(401).send('Not authorized')
     next()
 })
 
-steamAuthRestricted.get('/logout', async (req: Request, res: Response) => {
-    await req.session.destroy()
-    return res.redirect('https://sklep.fable.zone/')
-})
+steamAuthRestricted.get('/logout', async (req: Request, res: Response) => await req.logout(() => res.redirect('https://sklep.fable.zone/') ))
 
-steamAuthRestricted.get("/player", async (req: Request, res: Response) => {
-    return res.send(req.session.steamUser)
-})
+steamAuthRestricted.get("/player", async (req: Request, res: Response) => res.json(req.user))
 
 steamAuthRestricted.get("/points", async (req: Request, res: Response) => {
-    const points: number = await db.getPoints(req.session.steamUser.steamid)
+    const points: number = await db.getPoints(req.user.id)
 
     return res.json({ points: points })
 })
@@ -71,7 +64,7 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
     if (!(requestedBundle in config.bundles))
         return res.status(400).send("Provided bundle code is not related with any existing bundle.")
 
-    const steamID: string = req.session.steamUser.steamid
+    const steamID: string = req.user.id
 
     const points: number = await db.getPoints(steamID)
 
@@ -102,7 +95,6 @@ steamAuthRestricted.post("/points-purchase/cashbil", async (req: Request, res: R
 // tebex
 const tebexRestricted = express.Router()
 tebexRestricted.use((req: Request, res: Response, next: NextFunction) => {
-    // console.log(req.session)
     if (!(tebex.checkIP(req.ip) && tebex.checkSignature(req)))
         return res.status(401).json(`You're not from tebex! Who let's you in there? WHO DO YOU WORK FOR!`)
     next()
@@ -126,7 +118,7 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
     const steamUser = req.body?.subject?.customer?.username
 
     if (!product) {
-        await fetch(config.webhook, {
+        await fetch(Deno.env.get('WEBHOOK') as string, {
             method: "POST",
             body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, that is not existing in config. The purchase has not been handled, but funds have been taken. Please resolve this issue manually.` }),
         })
@@ -135,7 +127,7 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
 
     const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
     if (!dbResponse) {
-        await fetch(config.webhook, {
+        await fetch(Deno.env.get('WEBHOOK') as string, {
             method: "POST",
             body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, but db query failed to give purchased points. The points have not been given, but funds have been taken. Please resolve this issue manually.` }),
         })
@@ -143,7 +135,7 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
     }
 
     const id = req.body?.id // upsi ktos zapomnial dodac ;*
-    res.json({ id: id })
+    res.json({ id: id }) // ojejku faktycznie uwu
 
     return res.status(200)
 })
@@ -176,6 +168,7 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
 
 export default (app: Application) => {
     app.use('/public', notRestricted)
+    app.use('/auth', auth)
     app.use('/user', steamAuthRestricted)
     app.use('/secure', tokenRestricted)
     app.use('/tebex', tebexRestricted)

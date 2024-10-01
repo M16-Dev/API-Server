@@ -7,6 +7,7 @@
     "express-session": "npm:express-session@1.18.0",
     "helmet": "npm:helmet@7.1.0",
     "rate-limiter-flexible": "npm:rate-limiter-flexible@5.0.3",
-    "steam-openid": "npm:node-steam-openid@1.2.3"
+    "passport": "npm:passport@0.7.0",
+    "passport-steam": "npm:passport-steam@1.0.18"
   }
 }

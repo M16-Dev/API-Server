@@ -12,6 +12,10 @@
       "npm:express@^5.0.0": "npm:express@5.0.0",
       "npm:helmet@7.1.0": "npm:helmet@7.1.0",
       "npm:node-steam-openid@1.2.3": "npm:node-steam-openid@1.2.3",
+      "npm:passport": "npm:passport@0.7.0",
+      "npm:passport-steam": "npm:passport-steam@1.0.18",
+      "npm:passport-steam@1.0.18": "npm:passport-steam@1.0.18",
+      "npm:passport@0.7.0": "npm:passport@0.7.0",
       "npm:rate-limiter-flexible@5.0.3": "npm:rate-limiter-flexible@5.0.3"
     },
     "jsr": {
@@ -26,6 +30,17 @@
       }
     },
     "npm": {
+      "@passport-next/passport-openid@1.0.0": {
+        "integrity": "sha512-W9uj4Ui/ZK/iBUNzSNxPWDQ8wCD1tUddGEVSGm0FN0B7ewo3yBQLGMoW3i3UqcwEzxdyGbAj06ohAhNQIXC4VA==",
+        "dependencies": {
+          "@passport-next/passport-strategy": "@passport-next/passport-strategy@1.1.0",
+          "openid": "openid@2.0.12"
+        }
+      },
+      "@passport-next/passport-strategy@1.1.0": {
+        "integrity": "sha512-2KhFjtPueJG6xVj2HnqXt9BlANOfYCVLyu+pXYjPGBDT8yk+vQwc/6tsceIj+mayKcoxMau2JimggXRPHgoc8w==",
+        "dependencies": {}
+      },
       "@types/node@18.16.19": {
         "integrity": "sha512-IXl7o+R9iti9eBW4Wg2hx1xQDig183jj7YLn8F7udNceyfkbn1ZxmzZXuak20gR40D7pIkIY1kYGx5VIGbaHKA==",
         "dependencies": {}
@@ -434,8 +449,31 @@
         "integrity": "sha512-CiyeOxFT/JZyN5m0z9PfXw4SCBJ6Sygz1Dpl0wqjlhDEGGBP1GnsUVEL0p63hoG1fcj3fHynXi9NYO4nWOL+qQ==",
         "dependencies": {}
       },
+      "passport-steam@1.0.18": {
+        "integrity": "sha512-3S6XlgATcJE3M3IfpwkvjWHeTDreaPUWQPykwxjv8LA5RtnfHrkt5c5HJdadYMCRHf3qh1OfCWETMxdpSdlBZA==",
+        "dependencies": {
+          "@passport-next/passport-openid": "@passport-next/passport-openid@1.0.0",
+          "steam-web": "steam-web@0.4.0"
+        }
+      },
+      "passport-strategy@1.0.0": {
+        "integrity": "sha512-CB97UUvDKJde2V0KDWWB3lyf6PC3FaZP7YxZ2G8OAtn9p4HI9j9JLP9qjOGZFvyl8uwNT8qM+hGnz/n16NI7oA==",
+        "dependencies": {}
+      },
+      "passport@0.7.0": {
+        "integrity": "sha512-cPLl+qZpSc+ireUvt+IzqbED1cHHkDoVYMo30jbJIdOOjQ1MQYZBPiNvmi8UM6lJuOpTPXJGZQk0DtC4y61MYQ==",
+        "dependencies": {
+          "passport-strategy": "passport-strategy@1.0.0",
+          "pause": "pause@0.0.1",
+          "utils-merge": "utils-merge@1.0.1"
+        }
+      },
       "path-to-regexp@8.0.0": {
         "integrity": "sha512-GAWaqWlTjYK/7SVpIUA6CTxmcg65SP30sbjdCvyYReosRkk7Z/LyHWwkK3Vu0FcIi0FNTADUs4eh1AsU5s10cg==",
+        "dependencies": {}
+      },
+      "pause@0.0.1": {
+        "integrity": "sha512-KG8UEiEVkR3wGEb4m5yZkVCzigAD+cVEJck2CzYZO37ZGJfctvVptVO192MwrtPhzONn6go8ylnOdMhKqi4nfg==",
         "dependencies": {}
       },
       "proxy-addr@2.0.7": {
@@ -553,6 +591,12 @@
       "statuses@2.0.1": {
         "integrity": "sha512-RwNA9Z/7PrK06rYLIzFMlaF+l73iwpzsqRIFgbMLbTcLD6cOao82TaWefPXQvB2fOC4AjuYSEndS7N/mTCbkdQ==",
         "dependencies": {}
+      },
+      "steam-web@0.4.0": {
+        "integrity": "sha512-FgSYhL7GaP4Va5JKT09yZ+WrTZttFtLwenIPuZd7GUA1z3W7vu7qqPT/qTC76Pd9+sf85txMgIPr/y0+3gNlUA==",
+        "dependencies": {
+          "qs": "qs@6.13.0"
+        }
       },
       "toidentifier@1.0.1": {
         "integrity": "sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==",
@@ -687,6 +731,8 @@
       "npm:express@^5.0.0",
       "npm:helmet@7.1.0",
       "npm:node-steam-openid@1.2.3",
+      "npm:passport-steam@1.0.18",
+      "npm:passport@0.7.0",
       "npm:rate-limiter-flexible@5.0.3"
     ]
   }

@@ -1,6 +1,7 @@
 import express from 'express'
 import session from 'express-session'
 import helmet from 'helmet'
+import passport from "passport"
 import config from './config.json' with { type: "json" }
 
 
@@ -35,6 +36,9 @@ export default (app: express.Application) => {
             httpOnly: true
         }
     }))
+
+    app.use(passport.initialize())
+    app.use(passport.session())
 
     app.use(express.json()) // Always serialize body to object (assume JSON).
 }
