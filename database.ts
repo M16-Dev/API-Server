@@ -1,5 +1,4 @@
-import { Client } from "https://deno.land/x/mysql/mod.ts"
-import { SteamID } from 'https://deno.land/x/steamid@v1.2.0/mod.ts';
+import { Client } from 'https://deno.land/x/mysql/mod.ts'
 
 const api_v4 = await new Client().connect({
     hostname: Deno.env.get('DB_HOSTNAME'),
@@ -61,29 +60,3 @@ export async function connectAccounts(steamID: string, discordID: string): Promi
         return false
     }
 }
-
-// export async function getSteamIDFromToken(token: string): Promise<string> {
-//     const { rows } = await api_v4.execute("SELECT steam_id FROM tokens WHERE token = ?", [token])
-
-//     return rows[0]?.steam_id
-// }
-
-// export async function getTokenSteamIDPairs(): Promise<Record<string, string>> {
-//     const { rows } = await api_v4.execute("SELECT * FROM tokens")
-
-//     const result: Record<string, string> = {}
-
-//     rows.forEach(obj => result[obj.token] = obj.steam_id);
-
-//     return result
-// }
-
-// export async function getTokens(): Promise<Array<string>> {
-//     const { rows } = await api_v4.execute("SELECT token FROM tokens")
-
-//     return rows?.map(x => x.token) as Array<string>
-// }
-
-// export async function getPlayerData(steamID: string) {
-//     const { rows } = await client.execute("SELECT token FROM tokens")
-// }
