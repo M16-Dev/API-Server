@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
 import * as db from './database.ts'
 import * as tebex from './tebex.ts'
+import * as utils from './utils.ts'
 import config from './config.json' with { type: "json" }
 import passport from 'passport'
 import SteamStrategy from 'passport-steam'
@@ -97,6 +98,17 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
     if (!bundleQueryRes)
         // return res.status(500).send("Failed to purchase bundle. Your funds could have changed. If you encountered this response, please contact an administrator.")
         return res.status(500).send("Nie udało się zakupić paczki. Twoje środki mogły zostać zabrane. Jeśli napotkałeś ten błąd, skontaktuj się z administratorem.")
+    
+    await utils.sendWebhook({
+        webhook: Deno.env.get('WEBHOOK') as string, 
+        user: { id:req.user.id, name: req.user.displayName, avatar: req.user._json.avatarfull }, 
+        color: 0x00AAFF, 
+        title: "Zakupiono pakiet!", 
+        fields: [
+            { name: "Pakiet", value: requestedBundle, inline: true },
+            { name: "Cena", value: `${bundlePrice}<a:piwo:1261359013866639361>`, inline: true }
+        ]
+    })
     return res.status(200).send(`Zakupiono pakiet! Wszystkie rzeczy zostaną za chwilę dodane do Twojego konta.`)
 })
 
@@ -122,11 +134,25 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
 
     for (const product of products) {
         if (!product) {
+            await utils.sendWebhook({
+                webhook: Deno.env.get('WEBHOOK') as string,
+                user: { id: steamUser.id, name: steamUser.username },
+                color: 0xFF0000,
+                title: `Failed points purchase!`,
+                description: `User bought premium points pack with ID **${product?.id}**, that is not existing in config.\nThe purchase has not been handled, but funds have been taken.\nPlease resolve this issue manually.`
+            })
             return res.status(400)
         }
 
         const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
         if (!dbResponse) {
+            await utils.sendWebhook({
+                webhook: Deno.env.get('WEBHOOK') as string,
+                user: { id: steamUser.id, name: steamUser.username },
+                color: 0xFF0000,
+                title: `Failed points purchase!`,
+                description: `User bought premium points pack with ID **${product?.id}**, but db query failed to give purchased points.\nThe points have not been given, but funds have been taken.\nPlease resolve this issue manually.`
+            })
             return res.status(400)
         }
     }
