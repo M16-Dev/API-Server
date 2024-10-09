@@ -117,24 +117,18 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
     if (req.body?.type  !== "payment.completed")
         return res.status(202)
 
-    const product = req.body?.subject?.products[0]
+    const products = req.body?.subject?.products
     const steamUser = req.body?.subject?.customer?.username
 
-    if (!product) {
-        await fetch(Deno.env.get('WEBHOOK') as string, {
-            method: "POST",
-            body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, that is not existing in config. The purchase has not been handled, but funds have been taken. Please resolve this issue manually.` }),
-        })
-        return res.status(400)
-    }
+    for (const product of products) {
+        if (!product) {
+            return res.status(400)
+        }
 
-    const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
-    if (!dbResponse) {
-        await fetch(Deno.env.get('WEBHOOK') as string, {
-            method: "POST",
-            body: JSON.stringify({ content: `${steamUser?.username} [${steamUser?.id}] has bought a premium points pack with ID ${product?.id}, but db query failed to give purchased points. The points have not been given, but funds have been taken. Please resolve this issue manually.` }),
-        })
-        return res.status(400)
+        const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
+        if (!dbResponse) {
+            return res.status(400)
+        }
     }
 
     const id = req.body?.id // upsi ktos zapomnial dodac ;*
