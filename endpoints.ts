@@ -17,7 +17,7 @@ notRestricted.get("/uwu", (_req: Request, res: Response) => {
 
 // ? Routes for auth
 
-const auth = express.Router()
+const steamAuth = express.Router()
 
 passport.serializeUser((user: any, done: any) => { done(null, user) })
 passport.deserializeUser((user: any, done: any) => { done(null, user) })
@@ -27,15 +27,24 @@ passport.use(new SteamStrategy({
     apiKey: Deno.env.get('STEAM_API_KEY'),
 }, (_identifier: any, profile: any, done: any) => {
     return done(null, profile)
-  }
-))
+}))
 
-auth.get('/steam', passport.authenticate('steam'))
-
-auth.get('/steam/return',
-    passport.authenticate('steam', { failureRedirect: 'https://sklep.fable.zone/' }),
-    (req: Request, res: Response) => { res.redirect('https://sklep.fable.zone/') }
+steamAuth.get('/', (req: Request, _res: Response, next: NextFunction) => {
+        if (req.query.key) {
+            let discordID: string = ''
+            for (const letter of req.query.key.split('').filter((_: string, i: number) => i % 2 === 0).join(''))
+                discordID += String.fromCharCode(letter.charCodeAt(0) - 50)
+            req.session.discordID = discordID
+        }
+        next()
+    },
+    passport.authenticate('steam')
 )
+
+steamAuth.get('/return', (req: Request, res: Response, next: NextFunction) => {
+    const url = req.session.discordID ? '/user/link-accounts' : 'https://sklep.fable.zone/'
+    passport.authenticate('steam', { failureRedirect: url, successRedirect: url, keepSessionInfo: true })(req, res, next)
+})
 
 
 // ? Routes that require steam authentication
@@ -45,6 +54,12 @@ steamAuthRestricted.use((req: Request, res: Response, next: NextFunction) => {
     if (!req.isAuthenticated())
         return res.status(401).send('Not authorized')
     next()
+})
+
+steamAuthRestricted.get('/link-accounts', async (req: Request, res: Response) => {
+    const dbRes = await db.connectAccounts(req.user.id, req.session.discordID)
+    req.session.discordID = null
+    res.status(dbRes ? 200 : 500).send(dbRes ? 'Pomyślnie połączono konta!' : 'Nie udało się połączyć kont :c')
 })
 
 steamAuthRestricted.get('/logout', async (req: Request, res: Response) => await req.logout(() => res.redirect('https://sklep.fable.zone/') ))
@@ -156,7 +171,7 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
 
 export default (app: Application) => {
     app.use('/public', notRestricted)
-    app.use('/auth', auth)
+    app.use('/auth/steam', steamAuth)
     app.use('/user', steamAuthRestricted)
     app.use('/secure', tokenRestricted)
     app.use('/tebex', tebexRestricted)
