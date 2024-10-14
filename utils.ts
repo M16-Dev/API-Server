@@ -1,23 +1,5 @@
-type EmbedField = {
-    name: string
-    value: string
-    inline: boolean
-}
+import { WebhookData } from './types.ts'
 
-type EmbedUser = {
-    id: string
-    name: string
-    avatar?: string
-}
-
-type WebhookData = {
-    webhook: string
-    user: EmbedUser
-    color?: number
-    title: string
-    description?: string
-    fields?: EmbedField[]
-}
 
 export async function sendWebhook(webhookData: WebhookData): Promise<void> {
     await fetch(webhookData.webhook, {
