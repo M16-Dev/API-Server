@@ -59,8 +59,12 @@ steamAuthRestricted.use((req: Request, res: Response, next: NextFunction) => {
 
 steamAuthRestricted.get('/link-accounts', async (req: Request, res: Response) => {
     const dbRes = await db.connectAccounts(req.user.id, req.session.discordID)
+    const botRes = await fetch(`${Deno.env.get("BOT_URL")}/loaduser?id=${req.session.discordID}&sid=${req.user.id}`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(8000)
+    }).catch(() => ({ status: 500 }))
     req.session.discordID = null
-    res.status(dbRes ? 200 : 500).send(dbRes ? 'Pomyślnie połączono konta!' : 'Nie udało się połączyć kont :c')
+    res.status(dbRes || botRes.status == 200 ? 200 : 500).send((dbRes ? `Pomyślnie połączono konta!` : 'Nie udało się połączyć kont :c') + '</br>' + (botRes.status == 200 ? 'Nadano role na serwerze Discord!' : 'Nie udało się nadać ról na serwerze Discord :c'))
 })
 
 steamAuthRestricted.get('/logout', async (req: Request, res: Response) => await req.logout(() => res.redirect('https://sklep.fable.zone/') ))

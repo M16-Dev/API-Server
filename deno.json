@@ -1,6 +1,8 @@
 {
   "tasks": {
-    "dev": "deno run --watch -A server.ts"
+    "dev": "deno run --watch -A server.ts",
+    "start": "deno run --allow-env --allow-read --allow-net --watch --env server.ts",
+    "pm2": "pm2 start server.ts --interpreter=\"deno\" --interpreter-args=\"task start\""
   },
   "imports": {
     "express": "npm:express@^5.0.0",
