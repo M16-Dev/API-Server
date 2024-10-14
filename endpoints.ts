@@ -5,6 +5,7 @@ import * as utils from './utils.ts'
 import config from './config.json' with { type: "json" }
 import passport from 'passport'
 import SteamStrategy from 'passport-steam'
+import { PlayerData } from './types.ts'
 
 
 // ? Routes that are open
@@ -191,6 +192,23 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
     return res.status(200).send(`Points has been given successfuly.`)
 })
 
+tokenRestricted.get('/player', async (req: Request, res: Response) => {
+    const steamID = req.query.steamID?.match(/^\d+$/)?.[0]
+    const discordID = req.query.discordID?.match(/^\d+$/)?.[0]
+
+    if (!steamID && !discordID)
+        return res.status(400).send("Did not provide either steamID or discordID.")
+
+    // ? maybe we should check db responses first
+    const playerData: PlayerData = {
+        steamID: steamID ?? await db.getDiscordID(steamID),
+        discordID: discordID ?? await db.getSteamID(discordID) ?? undefined,
+        rank: "",
+        ban: false,
+        points: await db.getPoints(steamID) as number ?? 0,
+    }
+    // TODO: finish this endpoint to return player data
+})
 
 
 export default (app: Application) => {
