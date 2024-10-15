@@ -20,7 +20,10 @@ notRestricted.get("/uwu", (_req: Request, res: Response) => {
 
 const steamAuth = express.Router()
 
-passport.serializeUser((user: any, done: any) => { done(null, user) })
+passport.serializeUser((user: any, done: any) => {
+    user._json.provider = user.provider
+    done(null, user._json)
+})
 passport.deserializeUser((user: any, done: any) => { done(null, user) })
 passport.use(new SteamStrategy({
     returnURL: Deno.env.get('DOMAIN') + '/auth/steam/return',
