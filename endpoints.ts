@@ -72,8 +72,7 @@ steamAuthRestricted.get('/logout', async (req: Request, res: Response) => await 
 steamAuthRestricted.get("/player", (req: Request, res: Response) => res.json(req.user))
 
 steamAuthRestricted.get("/points", async (req: Request, res: Response) => {
-    const points: number | boolean = await db.getPoints(req.user.id)
-    if (!points) return res.status(500).send("Failed to get points.")
+    const points: number = await db.getPoints(req.user.id)
 
     return res.json({ points: points })
 })
@@ -85,13 +84,12 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
 
     const steamID: string = req.user.id
 
-    const points: number | boolean = await db.getPoints(steamID)
-    if (!points) return res.status(500).send("Failed to get points.")
+    const points: number = await db.getPoints(steamID)
 
     const bundlePrice: number = config.bundles[requestedBundle as keyof typeof config.bundles].price
-    if (points as number < bundlePrice)
+    if (points < bundlePrice)
         // return res.status(400).send(`Insufficient funds for this purchase. Missing ${bundlePrice - points} points.`)
-        return res.status(400).send(`Niewystarczające środki na zakup. Brakuje ${bundlePrice - (points as number)} punktów.`)
+        return res.status(400).send(`Niewystarczające środki na zakup. Brakuje ${bundlePrice - points} punktów.`)
 
     const payQueryRes: boolean = await db.addPoints(steamID, -bundlePrice)
     if (!payQueryRes)
