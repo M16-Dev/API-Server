@@ -198,16 +198,19 @@ tokenRestricted.get('/player', async (req: Request, res: Response) => {
 
     if (!steamID && !discordID)
         return res.status(400).send("Did not provide either steamID or discordID.")
+    if (steamID && discordID)
+        return res.status(400).send("Provided both steamID and discordID. Should provide only one.")
 
-    // ? maybe we should check db responses first
+    // TODO - get more data from other databases, like roles and bans and more
     const playerData: PlayerData = {
         steamID: steamID ?? await db.getDiscordID(steamID),
-        discordID: discordID ?? await db.getSteamID(discordID) ?? undefined,
-        rank: "",
+        discordID: discordID ?? await db.getSteamID(discordID),
+        rank: "uwu",
         ban: false,
-        points: await db.getPoints(steamID) as number ?? 0,
+        points: await db.getPoints(steamID) as number,
     }
-    // TODO: finish this endpoint to return player data
+
+    return playerData
 })
 
 
