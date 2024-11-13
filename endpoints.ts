@@ -1,5 +1,6 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
-import * as db from './database.ts'
+import * as db from './apiDatabase.ts'
+import * as sam from './samDatabase.ts'
 import * as tebex from './tebex.ts'
 import * as utils from './utils.ts'
 import config from './config.json' with { type: "json" }
@@ -193,21 +194,27 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
 })
 
 tokenRestricted.get('/player', async (req: Request, res: Response) => {
-    const steamID = req.query.steamID?.match(/^\d+$/)?.[0]
-    const discordID = req.query.discordID?.match(/^\d+$/)?.[0]
+    const discordID: string | undefined = req.query.discordID
+    const steamID: string | undefined = req.query.steamID ?? (discordID ? await db.getSteamID(discordID) : undefined)
 
-    if (!steamID && !discordID)
-        return res.status(400).send("Did not provide either steamID or discordID.")
-    if (steamID && discordID)
-        return res.status(400).send("Provided both steamID and discordID. Should provide only one.")
+    if (!steamID && !discordID) return res.status(400).send("Did not provide either steamID or discordID.")
+    if (!steamID)               return res.status(400).send("There is no steamID related with given discordID.")
+    if (steamID && discordID)   return res.status(400).send("Provided both steamID and discordID. Should provide only one.")
 
-    // TODO - get more data from other databases, like roles and bans and more
+    const samPlayer = await sam.getSamPlayer(steamID)
+    if (!samPlayer) return res.status(500).send("Failed to get player data from SAM database.")
+    const { rank, playTime } = samPlayer
+    const secRank = await sam.getSecondaryRank(steamID)
+    const ban = await sam.getBanData(steamID)
+
     const playerData: PlayerData = {
-        steamID: steamID ?? await db.getDiscordID(steamID),
-        discordID: discordID ?? await db.getSteamID(discordID),
-        rank: "uwu",
-        ban: false,
-        points: await db.getPoints(steamID) as number,
+        steamID: steamID,
+        discordID: discordID,
+        rank: rank,
+        secondaryRank: secRank ? secRank : null,
+        playTime: playTime,
+        warnPoints: await sam.getWarnPoints(steamID) as number,
+        ban: ban ? ban : null,
     }
 
     return playerData
