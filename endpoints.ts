@@ -74,8 +74,7 @@ steamAuthRestricted.get('/logout', async (req: Request, res: Response) => await 
 steamAuthRestricted.get("/player", (req: Request, res: Response) => res.json(req.user))
 
 steamAuthRestricted.get("/points", async (req: Request, res: Response) => {
-    const points: number | boolean = await db.getPoints(req.user.id)
-    if (!points) return res.status(500).send("Failed to get points.")
+    const points: number = await db.getPoints(req.user.id)
 
     return res.json({ points: points })
 })
@@ -87,13 +86,12 @@ steamAuthRestricted.post("/bundle-purchase", async (req: Request, res: Response)
 
     const steamID: string = req.user.id
 
-    const points: number | boolean = await db.getPoints(steamID)
-    if (!points) return res.status(500).send("Failed to get points.")
+    const points: number = await db.getPoints(steamID)
 
     const bundlePrice: number = config.bundles[requestedBundle as keyof typeof config.bundles].price
-    if (points as number < bundlePrice)
+    if (points < bundlePrice)
         // return res.status(400).send(`Insufficient funds for this purchase. Missing ${bundlePrice - points} points.`)
-        return res.status(400).send(`Niewystarczające środki na zakup. Brakuje ${bundlePrice - (points as number)} punktów.`)
+        return res.status(400).send(`Niewystarczające środki na zakup. Brakuje ${bundlePrice - points} punktów.`)
 
     const payQueryRes: boolean = await db.addPoints(steamID, -bundlePrice)
     if (!payQueryRes)
@@ -195,13 +193,13 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
 
 tokenRestricted.get('/player', async (req: Request, res: Response) => {
     let discordID: string | undefined = req.query.discordID
-    const steamID: string | undefined = req.query.steamID ?? await db.getSteamID(discordID as string) ?? undefined
+    const steamID: string | undefined = req.query.steamID ?? await db.getSteamID(discordID as string)
     
     if (!steamID && !discordID) return res.status(400).send("Did not provide either steamID or discordID.")
     if (!steamID)               return res.status(400).send("There is no steamID related with given discordID.")
     if (steamID && discordID)   return res.status(400).send("Provided both steamID and discordID. Should provide only one.")
 
-    if (!discordID && steamID) discordID = await db.getDiscordID(steamID) || undefined
+    if (!discordID && steamID) discordID = await db.getDiscordID(steamID)
 
     const samPlayer = await sam.getSamPlayer(steamID)
     if (!samPlayer) return res.status(500).send("Failed to get player data from SAM database.")
@@ -215,7 +213,7 @@ tokenRestricted.get('/player', async (req: Request, res: Response) => {
         rank: rank,
         secondaryRank: secRank,
         playTime: playTime,
-        warnPoints: await sam.getWarnPoints(steamID) as number ?? 0,
+        warnPoints: await sam.getWarnPoints(steamID),
         ban: ban
     }
 
