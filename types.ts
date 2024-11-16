@@ -19,8 +19,8 @@ export type WebhookData = {
 }
 
 
-type BanData = {
-    expiration: number
+export type BanData = {
+    unbanDate: number
     reason?: string
     admin: string
 }
@@ -29,6 +29,9 @@ export type PlayerData = {
     steamID: string
     discordID?: string
     rank: string
-    ban: false | BanData
-    points: number
+    secondaryRank: string | null
+    ban: BanData | null
+    playTime: number
+    warnPoints: number
+
 }
