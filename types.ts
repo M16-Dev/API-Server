@@ -20,7 +20,7 @@ export type WebhookData = {
 
 
 export type BanData = {
-    expiration: number
+    unbanDate: number
     reason?: string
     admin: string
 }

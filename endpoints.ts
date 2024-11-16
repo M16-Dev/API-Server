@@ -6,7 +6,7 @@ import * as utils from './utils.ts'
 import config from './config.json' with { type: "json" }
 import passport from 'passport'
 import SteamStrategy from 'passport-steam'
-import { PlayerData } from './types.ts'
+import { BanData, PlayerData } from './types.ts'
 
 
 // ? Routes that are open
@@ -183,41 +183,43 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
     const steamID: string = req.body?.steamID
     if (!steamID)
         return res.status(400).send("Did not provide steamID.")
-    const points: number = req.body?.points
-    if (!points)
+    const amount: number = req.body?.amount
+    if (!amount)
         return res.status(400).send("Did not provide amount of points.")
 
-    const givePointsQueryRes: boolean = await db.addPoints(steamID, points)
+    const givePointsQueryRes: boolean = await db.addPoints(steamID, amount)
     if (!givePointsQueryRes)
         return res.status(500).send("Failed to give points.")
     return res.status(200).send(`Points has been given successfuly.`)
 })
 
 tokenRestricted.get('/player', async (req: Request, res: Response) => {
-    const discordID: string | undefined = req.query.discordID
-    const steamID: string | undefined = req.query.steamID ?? (discordID ? await db.getSteamID(discordID) : undefined)
-
+    let discordID: string | undefined = req.query.discordID
+    const steamID: string | undefined = req.query.steamID ?? await db.getSteamID(discordID as string) ?? undefined
+    
     if (!steamID && !discordID) return res.status(400).send("Did not provide either steamID or discordID.")
     if (!steamID)               return res.status(400).send("There is no steamID related with given discordID.")
     if (steamID && discordID)   return res.status(400).send("Provided both steamID and discordID. Should provide only one.")
 
+    if (!discordID && steamID) discordID = await db.getDiscordID(steamID) || undefined
+
     const samPlayer = await sam.getSamPlayer(steamID)
     if (!samPlayer) return res.status(500).send("Failed to get player data from SAM database.")
     const { rank, playTime } = samPlayer
-    const secRank = await sam.getSecondaryRank(steamID)
-    const ban = await sam.getBanData(steamID)
+    const secRank: string | null = await sam.getSecondaryRank(steamID) || null
+    const ban: BanData | null = await sam.getBanData(steamID) || null
 
     const playerData: PlayerData = {
         steamID: steamID,
         discordID: discordID,
         rank: rank,
-        secondaryRank: secRank ? secRank : null,
+        secondaryRank: secRank,
         playTime: playTime,
-        warnPoints: await sam.getWarnPoints(steamID) as number,
-        ban: ban ? ban : null,
+        warnPoints: await sam.getWarnPoints(steamID) as number ?? 0,
+        ban: ban
     }
 
-    return playerData
+    return res.status(200).json(playerData)
 })
 
 

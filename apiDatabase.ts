@@ -19,20 +19,19 @@ export async function getPoints(steamID: string): Promise<number | boolean> {
     }
 }
 
-export async function addPoints(steamID: string, points: number): Promise<boolean> {
+export async function addPoints(steamID: string, amount: number): Promise<boolean> {
     try {
         const res = await client.execute(`
             INSERT INTO points (steam_id, points)
             VALUES (?, ?)
             ON DUPLICATE KEY UPDATE
             points = points + ?`, 
-            [steamID, points, points])
-
+            [steamID, amount, amount])
         const success = !!res?.affectedRows
 
         if (success)
             client.execute(`
-                INSERT INTO points_logs (steam_id, points_added) VALUES (?, ?)`, [steamID, points])
+                INSERT INTO points_logs (steam_id, points_added) VALUES (?, ?)`, [steamID, amount])
         
         return success
     } catch (e) {
