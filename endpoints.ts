@@ -72,7 +72,7 @@ steamAuthRestricted.get('/link-accounts', async (req: Request, res: Response) =>
 
 steamAuthRestricted.get('/logout', async (req: Request, res: Response) => await req.logout(() => res.redirect('https://sklep.fable.zone/') ))
 
-steamAuthRestricted.get("/player", (req: Request, res: Response) => res.json(req.user))
+steamAuthRestricted.get("/steam-data", (req: Request, res: Response) => res.json(req.user))
 
 steamAuthRestricted.get("/points", async (req: Request, res: Response) => {
     const points: number | boolean = await db.getPoints(req.user.id)
