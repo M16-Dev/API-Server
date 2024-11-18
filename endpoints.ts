@@ -191,6 +191,15 @@ tokenRestricted.post('/points', async (req: Request, res: Response) => {
     return res.status(200).send(`Points has been given successfuly.`)
 })
 
+tokenRestricted.get('/points', async (req: Request, res: Response) => {
+    const steamID: string = req.body?.steamID
+    if (!steamID)
+        return res.status(400).send("Did not provide steamID.")
+
+    const pointsQueryRes: number = await db.getPoints(steamID)
+    return res.status(200).json({ amount: pointsQueryRes })
+})
+
 tokenRestricted.get('/player', async (req: Request, res: Response) => {
     let discordID: string | undefined = req.query.discordID
     const steamID: string | undefined = req.query.steamID ?? await db.getSteamID(discordID as string)
