@@ -13,6 +13,9 @@ const client = await new Client().connect({
 
 type SamPlayer = {
     rank: string
+    expiryDate: number
+    firstJoin: number
+    lastJoin: number
     playTime: number
 }
 
@@ -46,11 +49,18 @@ export async function getBanData(steamID: string): Promise<BanData | null> {
     }
 }
 
-export async function getSecondaryRank(steamID: string): Promise<string | null> {
+type SecondaryRankData = {
+    secondaryRank: string
+    secondaryExpiryDate: number
+}
+
+export async function getSecondaryRankData(steamID: string): Promise<SecondaryRankData | null> {
     try {
-        const { rows } = await client.execute("SELECT rank FROM secondary_ranks WHERE steam_id = ?", [steamID])
+        const { rows } = await client.execute("SELECT rank AS secondaryRank, expires AS secondaryExpiryDate FROM secondary_ranks WHERE steam_id = ?", [steamID])
         
-        return rows?.[0]?.rank ?? null
+        if (!rows?.length) return null
+        
+        return rows[0]
     } catch (e) {
         console.log(e)
         return null

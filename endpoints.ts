@@ -212,18 +212,18 @@ tokenRestricted.get('/player', async (req: Request, res: Response) => {
 
     const samPlayer = await sam.getSamPlayer(steamID)
     if (!samPlayer) return res.status(500).send("Failed to get player data from SAM database.")
-    const { rank, playTime } = samPlayer
-    const secRank: string | null = await sam.getSecondaryRank(steamID) || null
+    const { rank, expiryDate, firstJoin, lastJoin, playTime } = samPlayer
+    const secondaryRankData = await sam.getSecondaryRankData(steamID)
+    const secondaryRank = secondaryRankData ? secondaryRankData.secondaryRank : null
+    const secondaryExpiryDate = secondaryRankData ? secondaryRankData.secondaryExpiryDate : null
     const ban: BanData | null = await sam.getBanData(steamID) || null
 
     const playerData: PlayerData = {
-        steamID: steamID,
-        discordID: discordID,
-        rank: rank,
-        secondaryRank: secRank,
-        playTime: playTime,
+        steamID, discordID,
+        rank, expiryDate, secondaryRank, secondaryExpiryDate,
+        firstJoin, lastJoin, playTime,
+        ban,
         warnPoints: await sam.getWarnPoints(steamID),
-        ban: ban
     }
 
     return res.status(200).json(playerData)
