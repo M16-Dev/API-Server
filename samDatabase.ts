@@ -20,14 +20,11 @@ export async function getSamPlayer(steamID: string): Promise<SamPlayer | undefin
     try {
         const steam2 = new SteamID(steamID).getSteam2RenderedID()
         
-        const { rows } = await client.execute("SELECT rank, play_time FROM sam_players WHERE steamid = ?", [steam2])
+        const { rows } = await client.execute("SELECT rank, expiry_date AS expiryDate, first_join AS firstJoin, last_join AS lastJoin, play_time AS playTime FROM sam_players WHERE steamid = ?", [steam2])
 
         if (!rows?.length) return undefined
         
-        const { play_time, ...rest } = rows[0];
-        const samPlayer: SamPlayer = { playTime: play_time, ...rest };
-        
-        return samPlayer
+        return rows[0]
     } catch (e) {
         console.log(e)
         return undefined
@@ -38,14 +35,11 @@ export async function getBanData(steamID: string): Promise<BanData | null> {
     try {
         const steam2 = new SteamID(steamID).getSteam2RenderedID()
         
-        const { rows } = await client.execute("SELECT reason, unban_date, admin FROM sam_bans WHERE steamid = ?", [steam2])
+        const { rows } = await client.execute("SELECT reason, unban_date AS unbanDate, admin FROM sam_bans WHERE steamid = ?", [steam2])
         
         if (!rows?.length) return null
         
-        const { unban_date, ...rest } = rows[0]
-        const banData: BanData = { unbanDate: unban_date, ...rest }
-        
-        return banData
+        return rows[0]
     } catch (e) {
         console.log(e)
         return null
