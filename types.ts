@@ -29,12 +29,12 @@ export type PlayerData = {
     steamID: string
     discordID?: string
     points: number
-    rank: string
-    expiryDate: number
+    rank?: string
+    expiryDate?: number
     secondaryRank: string | null
     secondaryExpiryDate: number | null
-    firstJoin: number
-    lastJoin: number
+    firstJoin?: number
+    lastJoin?: number
     playTime: number
     ban: BanData | null
     warnPoints: number
