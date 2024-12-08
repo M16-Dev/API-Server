@@ -1,6 +1,7 @@
 import express, { Application, Request, Response, NextFunction } from 'express'
-import * as db from './apiDatabase.ts'
-import * as sam from './samDatabase.ts'
+import * as db from './dbClients/apiDatabase.ts'
+import * as sam from './dbClients/samDatabase.ts'
+import * as maindb from './dbClients/mainDatabase.ts'
 import * as tebex from './tebex.ts'
 import * as utils from './utils.ts'
 import config from './config.json' with { type: "json" }
@@ -212,13 +213,14 @@ tokenRestricted.get('/player', async (req: Request, res: Response) => {
     const secondaryExpiryDate = secondaryRankData ? secondaryRankData.secondaryExpiryDate : null
     const ban: BanData | null = await sam.getBanData(steamID) || null
     const points: number = await db.getPoints(steamID)
+    const cash: number = await maindb.getCash(steamID)
+    const warnPoints: number = await sam.getWarnPoints(steamID)
 
     const playerData: PlayerData = {
         steamID, discordID,
         rank, expiryDate, secondaryRank, secondaryExpiryDate,
         firstJoin, lastJoin, playTime,
-        ban, points,
-        warnPoints: await sam.getWarnPoints(steamID),
+        ban, points, cash, warnPoints,
     }
 
     return res.status(200).json(playerData)

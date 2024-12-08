@@ -1,6 +1,6 @@
 import { Client } from 'https://deno.land/x/mysql/mod.ts'
 import SteamID from 'npm:steamid'
-import { BanData } from './types.ts'
+import { BanData } from '../types.ts'
 
 const client = await new Client().connect({
     hostname: Deno.env.get('DB_HOSTNAME'),

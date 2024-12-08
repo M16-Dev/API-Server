@@ -29,6 +29,7 @@ export type PlayerData = {
     steamID: string
     discordID?: string
     points: number
+    cash: number
     rank?: string
     expiryDate?: number
     secondaryRank: string | null
