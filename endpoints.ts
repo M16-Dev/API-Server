@@ -137,6 +137,7 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
     const products = req.body?.subject?.products
     const steamUser = req.body?.subject?.customer?.username
 
+    let isProblem = false
     for (const product of products) {
         if (!product) {
             await utils.sendWebhook({
@@ -146,10 +147,11 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
                 title: `Failed points purchase!`,
                 description: `User bought premium points pack with ID **${product?.id}**, that is not existing in config.\nThe purchase has not been handled, but funds have been taken.\nPlease resolve this issue manually.`
             })
-            return res.status(400)
+            isProblem = true
+            continue
         }
 
-        const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom))
+        const dbResponse: boolean = await db.addPoints(steamUser?.id, Number(product?.custom) * product.quantity)
         if (!dbResponse) {
             await utils.sendWebhook({
                 webhook: Deno.env.get('WEBHOOK') as string,
@@ -158,14 +160,14 @@ tebexRestricted.post("/points-purchase", async (req: Request, res: Response) => 
                 title: `Failed points purchase!`,
                 description: `User bought premium points pack with ID **${product?.id}**, but db query failed to give purchased points.\nThe points have not been given, but funds have been taken.\nPlease resolve this issue manually.`
             })
-            return res.status(400)
+            isProblem = true
         }
     }
 
     const id = req.body?.id // upsi ktos zapomnial dodac ;*
-    res.json({ id: id }) // ojejku faktycznie uwu
+    res.json({ id }) // ojejku faktycznie uwu
 
-    return res.status(200)
+    return res.status(isProblem ? 400 : 200)
 })
 
 
